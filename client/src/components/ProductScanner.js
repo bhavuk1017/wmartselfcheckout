@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal, Form } from 'react-bootstrap';
 import { BrowserMultiFormatReader } from '@zxing/library';
 
 function ProductScanner({ onAddToCart }) {
@@ -8,8 +8,15 @@ function ProductScanner({ onAddToCart }) {
     const [scannedProduct, setScannedProduct] = useState(null);
     const videoRef = useRef(null);
     const [isScanning, setIsScanning] = useState(false);
+    const [devices, setDevices] = useState([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState('');
 
-    const handleClose = () => setShowModal(false);
+    const handleClose = () => {
+        setShowModal(false);
+        setScannedProduct(null);
+        setError(null);
+    };
+
     const handleShow = () => setShowModal(true);
 
     useEffect(() => {
@@ -22,37 +29,13 @@ function ProductScanner({ onAddToCart }) {
             codeReader
                 .listVideoInputDevices()
                 .then(videoInputDevices => {
+                    setDevices(videoInputDevices);
                     if (videoInputDevices.length > 0) {
-                        const selectedDeviceId = videoInputDevices[0].deviceId;
+                        const defaultDeviceId = videoInputDevices[0].deviceId;
+                        setSelectedDeviceId(defaultDeviceId);
 
-                        codeReader.decodeFromVideoDevice(selectedDeviceId, videoRef.current, (result, error) => {
-                            if (result) {
-                                console.log('QR Code result:', result.text);
-                                try {
-                                    // Assuming the QR code contains JSON string with product info
-                                    const product = JSON.parse(result.text);
-                                    // Validate the product data
-                                    if (product.name && product.price) {
-                                        setScannedProduct(product);
-                                        console.log(11);
-                                        onAddToCart(product); // Call the function to add product to cart
-                                        console.log(12);
-                                        alert(`${product.name} has been added to your cart!`);
-                                        handleClose(); // Close the modal after successful scan
-                                    } else {
-                                        setError('Invalid QR code data.');
-                                    }
-                                } catch (e) {
-                                    console.error('Error parsing QR code data:', e);
-                                    setError('Error parsing QR code data. Please try again.');
-                                }
-                            }
-
-                            if (error) {
-                                console.error('Error decoding QR code:', error);
-                                setError('Error decoding QR code. Please try again.');
-                            }
-                        });
+                        // Start scanning with the default device
+                        codeReader.decodeFromVideoDevice(defaultDeviceId, videoRef.current, handleScanResult);
                     } else {
                         setError('No video input devices found.');
                     }
@@ -69,7 +52,43 @@ function ProductScanner({ onAddToCart }) {
                 setIsScanning(false);
             }
         };
-    }, [showModal, onAddToCart]);
+    }, [showModal]);
+
+    const handleScanResult = (result, error) => {
+        if (result) {
+            console.log('QR Code result:', result.text);
+            try {
+                const product = JSON.parse(result.text);
+                if (product.name && product.price) {
+                    setScannedProduct(product);
+                    onAddToCart(product);
+                    alert(`${product.name} has been added to your cart!`);
+                    handleClose();
+                } else {
+                    setError('Invalid QR code data.');
+                }
+            } catch (e) {
+                console.error('Error parsing QR code data:', e);
+                setError('Error parsing QR code data. Please try again.');
+            }
+        }
+        if (error) {
+            console.error('Error decoding QR code:', error);
+            setError('Error decoding QR code. Please try again.');
+        }
+    };
+
+    const handleDeviceChange = (e) => {
+        const deviceId = e.target.value;
+        setSelectedDeviceId(deviceId);
+
+        if (isScanning) {
+            // Stop scanning with the current device and switch to the new one
+            const codeReader = new BrowserMultiFormatReader();
+            codeReader.reset();
+            codeReader.decodeFromVideoDevice(deviceId, videoRef.current, handleScanResult);
+        }
+    };
 
     return (
         <div>
@@ -82,6 +101,20 @@ function ProductScanner({ onAddToCart }) {
                     <Modal.Title>Scan QR Code</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <Form.Group controlId="cameraSelect">
+                        <Form.Label>Select Camera</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={selectedDeviceId}
+                            onChange={handleDeviceChange}
+                        >
+                            {devices.map((device, index) => (
+                                <option key={index} value={device.deviceId}>
+                                    {device.label || `Camera ${index + 1}`}
+                                </option>
+                            ))}
+                        </Form.Control>
+                    </Form.Group>
                     <div className="qr-scanner">
                         <video ref={videoRef} style={{ width: '100%' }} />
                         {error && (
