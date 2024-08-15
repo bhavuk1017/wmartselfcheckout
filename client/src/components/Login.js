@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Form, Container, Alert } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 function Login({ onLogin }) {
@@ -52,10 +53,16 @@ function Login({ onLogin }) {
                                     required
                                 />
                             </Form.Group>
-                            <Button variant="primary" type="submit" className="mt-3">
+                            <Button variant="primary" type="submit" className="mt-3" block>
                                 Login
                             </Button>
                         </Form>
+                        <div className="mt-3 text-center">
+                            <span>Don't have an account? </span>
+                            <Link to="/register" className="btn btn-link">
+                                Register
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
