@@ -12,7 +12,7 @@ function Register() {
         event.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:5000/api/users/register', { username, password });
+            const response = await axios.post('https://wmartselfcheckout.onrender.com/api/users/register', { username, password });
             if (response.status === 201) {
                 setSuccess('Registration successful! You can now log in.');
                 setUsername('');

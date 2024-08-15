@@ -11,7 +11,7 @@ function Login({ onLogin }) {
         event.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:5000/api/users/login', { username, password });
+            const response = await axios.post('https://wmartselfcheckout.onrender.com/api/users/login', { username, password });
             if (response.status === 200) {
                 // Save token to local storage or state
                 localStorage.setItem('authToken', response.data.token);

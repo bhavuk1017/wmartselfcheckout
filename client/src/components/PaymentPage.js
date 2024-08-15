@@ -13,7 +13,7 @@ const PaymentPage = ({ userId, cartItems, totalAmount, setCartItems }) => {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:5000/api/payment/finalize-payment', {
+            const response = await axios.get('https://wmartselfcheckout.onrender.com/api/payment/finalize-payment', {
                 params: { userId },
             });
             setOrders(response.data);
@@ -26,7 +26,7 @@ const PaymentPage = ({ userId, cartItems, totalAmount, setCartItems }) => {
 
     const finalizePayment = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/api/payment/finalize-payment', {
+            const response = await axios.post('https://wmartselfcheckout.onrender.com/api/payment/finalize-payment', {
                 userId,
                 products: cartItems,
                 totalAmount,
