@@ -7,8 +7,12 @@ const orderRoutes= require('./routes/order');
 const paymentRoutes=require('./routes/payment');
 require('dotenv').config();
 const app = express();
-app.use(cors());
+const corsOptions = {
+    origin: "https://wmartselfcheckout-frontend.onrender.com", // frontend URI (ReactJS)
+}
 app.use(express.json());
+app.use(cors(corsOptions));
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL, {
